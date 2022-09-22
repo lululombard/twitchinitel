@@ -1,47 +1,47 @@
-# pyNitel
-python library to write Minitel servers/software
 
-Inspired by Cristel and Dragster, my previous Minitel server software on Apple II and 68K Macintosh...
+# Twitchinitel
 
-See:
-- https://github.com/cquest/cristel
-- https://github.com/cquest/dragster
+:warning: Ce projet a été fait en moins d'une heure, je m'attendais pas à avoir autant d'intéressés par [mon Tweet sur ce projet](https://twitter.com/lululombard/status/1572764632334610432), c'est vraiment du quick & dirty, j'utilise la lib pynitel n'importe comment, mais ça fonctionne.
 
-***This code is extremely experimental !***
+Ce projet utilise principalement les 2 librairies suivantes :
+- [Pynitel](https://github.com/cquest/pynitel)
+- [twitch-chat-irc](https://github.com/xenova/twitch-chat-irc)
 
-## Examples
+## Installation
 
-### Required hardware
+```bash
+git clone https://github.com/cquest/pynitel.git
+python3 -m venv env
+source env/bin/activate
+pip install -r requirements.txt -r pynitel/requirements.txt
+```
 
-Most Minitel have a serial port on a 5 pins DIN. This serial port is using TTL 5V levels.
+## Connexion du Minitel
 
-Cheap USB / Serial TTL cables are available for a few euros, like https://www.kubii.fr/composants-raspberry-pi/1761-cable-usb-vers-ttl-4-pin-3272496006263.html
+Il vous faut un câble série compatible avec le Minitel, personnellement j'ai un simple câble USB série FT232RL vers DIN "Peri-informatique" que j'ai fabriqué moi même. Juste une resistance de 4.7 kOhms sur TX venant du minitel, aucun composant actif contrairement à ce qui est recommandé pour le level shift, mais ça n'a pas cramé (pour l'instant).
 
-A 220K resistor is needed between the 5V and RX pin on the cable end (green and red wires), without it you can send data to the Minitel but cannot receive data.
+![Câble](https://user-images.githubusercontent.com/2182934/191799004-446947ea-432c-4b20-b747-540a721e9e91.jpeg)
 
+![Côté USB FTDI](https://user-images.githubusercontent.com/2182934/191799101-e8bc0d87-3292-40c3-9e7f-013869f1c172.jpeg)
 
-### Annuaire
+![Côté DIN](https://user-images.githubusercontent.com/2182934/191799186-4e4314eb-ae8b-4adc-92f4-378a6a26bdcd.jpeg)
 
-This example simulates the defunct "Annuaire Electronique", the videotex version of the phone directory.
+## Configuration
 
-**The goal**: use a Minitel to enter the name / location then query an existing phone directory on the web (118712.fr or others) and display the results on the Minitel as closest as possible to the original service back in the 80/90s.
+Si vous comptez envoyer des messages, il faut obtenir un token OAuth Twitch
+1. Allez sur https://twitchapps.com/tmi/
+2. Cliquez sur "Connect".
+3. Connectez vous avec votre compte Twitch
+4. Copiez le token auth, créez un fichier `.env` et enregistrez votre nom d'utilisateur Twitch et votre token OAuth en suivant ce format :
+    > NICK=x <br> PASS=y
 
-**Status**:
-- name/location input: implemented
-- query existing phone directory: implemented on 118712.fr, 118218.fr ans 118000.fr
-- basic display: implemented
-- display interaction (paging): implemented
+## Fonctionnement
 
-**To test**: `python3 example_annuaire.py`
+Utilisation :
+`python twitchinitel.py <serial_port> <channel_name>`
 
+Exemple :
+`python twitchinitel.py /dev/tty.usbserial-AB0OZ3VO KabameTheWolf`
 
-### 3615 ULLA
-
-This example simulates the famous "3615 ULLA" a chat and messaging pink Minitel service.
-
-**The goal**: recreate the videotex interface of 3615 ULLA, but acting as a Mastodon client. The script mainly deals with the videotex recreation, and delegates all the messaging part to Mastodon though its API.
-
-**Status**: partly implemented
-
-**To test**: `python3 ulla.py [mastodon_account password]`
-**Example**: `python3 ulla.py cquest@amicale.net mypassword`
+Tip : vous pouvez changer le baudrate de votre minitel à 4800 bauds en appuyant sur `Fnct + P + 4` et lancer le programme avec l'option `baudrate` pour une communication plus rapide
+`python twitchinitel.py <serial_port> <channel_name> --baudrate 4800`

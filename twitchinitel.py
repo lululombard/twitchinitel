@@ -1,24 +1,24 @@
-#!/usr/bin/env python3
-
-from curses.ascii import isupper
+import os
+import argparse
+from dotenv import load_dotenv
 import serial
-import pynitel
+from pynitel import pynitel
 import threading
 import time
 from twitch_chat_irc import twitch_chat_irc
 
-message_from = "lululombard"
-channel_name = "KabameTheWolf"
-
-class MinitelTwitch:
-    def __init__(self):
-        self.minitel = pynitel.Pynitel(serial.Serial('/dev/tty.usbserial-AB0OZ3VO', 1200,
+class Twitchinitel:
+    def __init__(self, channel_name, port, baudrate=1200):
+        load_dotenv()
+        self.minitel = pynitel.Pynitel(serial.Serial(port, baudrate,
                                                 parity=serial.PARITY_EVEN, bytesize=7,
                                                 timeout=2))
         self.buffers = {
             "messages": [],
             "send": ""
         }
+
+        self.channel_name = channel_name
 
         self.minitel.cls()
         self.redraw()
@@ -27,7 +27,7 @@ class MinitelTwitch:
         self.minitel.cls()
         self.minitel.cursor(False)
         self.minitel.pos(0, 0)
-        self.minitel._print("Twitchinitel - " + channel_name + "\n\r\n\r")
+        self.minitel._print("Twitchinitel - " + self.channel_name + "\n\r\n\r")
         for message in self.buffers["messages"][-7:]:
             self.minitel._print("{display-name}: {message}\n\r".format(**message))
 
@@ -45,9 +45,9 @@ class MinitelTwitch:
                 key = self.minitel.conn.read(1).decode()
                 if key == '\x41':  # Touche Envoi
                     self.buffers["send"] = ""
-                    twitch.send(channel_name, new_buffer)
+                    twitch.send(self.channel_name, new_buffer)
                     self.buffers["messages"].append({
-                        "display-name": message_from,
+                        "display-name": os.environ.get("NICK"),
                         "message": new_buffer
                     })
                     self.redraw()
@@ -62,18 +62,23 @@ class MinitelTwitch:
                 new_buffer += key
                 if new_buffer != self.buffers.get("send"):
                     self.buffers.update({"send": new_buffer})
-                    # self.redraw()
 
-def read_chat(twitch, minitel):
+def read_chat(twitch, channel_name, minitel):
     twitch.listen(channel_name, on_message=minitel.handle_message)
 
 if __name__ == "__main__":
 
-    minitel_twitch = MinitelTwitch()
+    parser = argparse.ArgumentParser(description='Twitchinitel')
+    parser.add_argument('serial_port', type=str, help='Serial port')
+    parser.add_argument('channel_name', type=str, help='Channel name')
+    parser.add_argument('--baudrate', type=int, help='Serial baudrate', default=1200)
+    args = parser.parse_args()
+
+    minitel = Twitchinitel(args.channel_name, args.serial_port, baudrate=args.baudrate)
 
     twitch = twitch_chat_irc.TwitchChatIRC()
 
-    p = threading.Thread(target=read_chat, args=(twitch, minitel_twitch, ))
+    p = threading.Thread(target=read_chat, args=(twitch, args.channel_name, minitel, ))
     p.start()
 
-    minitel_twitch.read_keys(twitch)
+    minitel.read_keys(twitch)

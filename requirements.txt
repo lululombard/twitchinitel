@@ -1,6 +1,2 @@
-pyserial
-beautifulsoup4
-lxml
-requests
-Mastodon.py
 twitch-chat-irc
+python-dotenv
