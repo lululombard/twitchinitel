@@ -41,7 +41,7 @@ Utilisation :
 `python twitchinitel.py <serial_port> <channel_name>`
 
 Exemple :
-`python twitchinitel.py /dev/tty.usbserial-AB0OZ3VO KabameTheWolf`
+`python twitchinitel.py /dev/ttyUSB0 lululombard`
 
 Tip : vous pouvez changer le baudrate de votre minitel à 4800 bauds en appuyant sur `Fnct + P + 4` et lancer le programme avec l'option `baudrate` pour une communication plus rapide
 `python twitchinitel.py <serial_port> <channel_name> --baudrate 4800`
