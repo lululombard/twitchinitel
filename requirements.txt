@@ -1,2 +1,3 @@
 twitch-chat-irc
 python-dotenv
+twitter
