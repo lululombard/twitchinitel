@@ -50,7 +50,6 @@ class Twitchinitel:
                         "display-name": os.environ.get("NICK"),
                         "message": new_buffer
                     })
-                    self.redraw()
                     time.sleep(0.5)
                     self.redraw()
                 if key == '\x47':  # Touche Effacement
